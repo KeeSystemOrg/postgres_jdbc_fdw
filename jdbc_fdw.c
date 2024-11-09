@@ -1335,7 +1335,7 @@ jdbcReScanForeignScan(ForeignScanState *node)
 
 	ereport(DEBUG3, (errmsg("In jdbcReScanForeignScan")));
 
-	if (!fsstate->cursor_exists || !fsstate->resultSetID > 0)
+	if (!fsstate->cursor_exists || !(fsstate->resultSetID > 0))
 		return;
 
 	(void) jq_exec_id(fsstate->jdbcUtilsInfo, fsstate->query, &fsstate->resultSetID);

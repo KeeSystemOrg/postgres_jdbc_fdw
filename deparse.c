@@ -257,15 +257,18 @@ jdbc_append_limit_clause(deparse_expr_cxt *context)
 	/* Make sure any constants in the exprs are printed portably */
 	nestlevel = jdbc_set_transmission_modes();
 
-	if (root->parse->limitCount)
-	{
-		appendStringInfoString(buf, " LIMIT ");
-		jdbc_deparse_expr((Expr *) root->parse->limitCount, context);
-	}
 	if (root->parse->limitOffset)
 	{
 		appendStringInfoString(buf, " OFFSET ");
 		jdbc_deparse_expr((Expr *) root->parse->limitOffset, context);
+		appendStringInfoString(buf, " ROWS");
+	}
+
+	if (root->parse->limitCount)
+	{
+		appendStringInfoString(buf, " FETCH FIRST ");
+		jdbc_deparse_expr((Expr *) root->parse->limitCount, context);
+		appendStringInfoString(buf, " ROWS ONLY");
 	}
 
 	jdbc_reset_transmission_modes(nestlevel);
