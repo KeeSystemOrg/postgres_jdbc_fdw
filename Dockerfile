@@ -1,4 +1,4 @@
-FROM timescale/timescaledb-ha:pg15
+FROM postgres:15
 
 LABEL org.opencontainers.image.source=https://github.com/KeeSystemOrg/postgres_jdbc_fdw
 

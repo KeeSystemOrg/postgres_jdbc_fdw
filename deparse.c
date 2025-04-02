@@ -2419,51 +2419,23 @@ jdbc_quote_identifier(const char *ident, char *q_char, bool quote_all_identifier
 		elog(ERROR, "jdbc_fdw: Not support quote string \"%s\".", q_char);
 	}
 
-	/*
-	 * would like to use <ctype.h> macros here, but they might yield unwanted
-	 * locale-specific results...
-	 */
-	safe = ((ident[0] >= 'a' && ident[0] <= 'z') || ident[0] == '_');
 
+	/*
+	 * Always quote identifiers to ensure proper handling of special characters
+	 * and case sensitivity in remote databases.
+	 */
+	safe = false;
+
+	/*
+	 * Count quotes in the identifier to properly escape them
+	 */
 	for (ptr = ident; *ptr; ptr++)
 	{
 		char		ch = *ptr;
 
-		if ((ch >= 'a' && ch <= 'z') ||
-			(ch >= '0' && ch <= '9') ||
-			(ch == '_'))
-		{
-			/* okay */
-		}
-		else
-		{
-			safe = false;
-			if (ch == *q_char)
-				nquotes++;
-		}
+		if (ch == *q_char)
+			nquotes++;
 	}
-
-	if (quote_all_identifiers)
-		safe = false;
-
-	if (safe)
-	{
-		/*
-		 * Check for keyword.  We quote keywords except for unreserved ones.
-		 * (In some cases we could avoid quoting a col_name or type_func_name
-		 * keyword, but it seems much harder than it's worth to tell that.)
-		 *
-		 * Note: ScanKeywordLookup() does case-insensitive comparison, but
-		 * that's fine, since we already know we have all-lower-case.
-		 */
-		int			kwnum = ScanKeywordLookup(ident, &ScanKeywords);
-
-		if (kwnum >= 0 && ScanKeywordCategories[kwnum] != UNRESERVED_KEYWORD)
-			safe = false;
-	}
-
-	if (safe)
-		return ident;			/* no change needed */
 
 	/* -----
 	 * Create new ident:
